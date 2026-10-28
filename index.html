@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advance Academy | Maths & Physics</title>
+<style>
+:root{--bg:#0b1220;--card:#151f32;--accent:#63e6be;--text:#f3f6ff;--muted:#b8c2d9;--bad:#ff7b8b}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:linear-gradient(145deg,#0b1220,#14213d);color:var(--text);min-height:100vh}
+header{text-align:center;padding:24px 14px 12px}h1{margin:0;font-size:clamp(1.8rem,6vw,2.6rem)}header p{color:var(--muted);margin:8px 0}
+main{max-width:850px;margin:auto;padding:12px}.panel{background:var(--card);border:1px solid #2b3b59;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 12px 32px #0003}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:130px}
+button,select{font:inherit;border-radius:12px;border:1px solid #435573;padding:12px;background:#202e47;color:var(--text);cursor:pointer}button:hover{border-color:var(--accent)}button.primary{background:var(--accent);color:#06231b;border:0;font-weight:750}
+button.choice{display:block;width:100%;text-align:left;margin:9px 0;background:#1d2a40}.choice.selected{outline:2px solid var(--accent)}.choice:disabled{cursor:default;opacity:.9}
+.small{font-size:.92rem;color:var(--muted)}.pill{display:inline-block;background:#263954;padding:5px 10px;border-radius:999px;font-size:.85rem;margin:3px}
+#question{font-size:1.2rem;line-height:1.55}.feedback{padding:12px;border-radius:10px;margin-top:12px}.good{background:#123c35;color:#b9ffeb}.bad{background:#482532;color:#ffd5dc}.hidden{display:none}.progress{height:8px;background:#29374e;border-radius:99px;overflow:hidden;margin:12px 0}.progress span{display:block;height:100%;background:var(--accent);width:0}
+footer{text-align:center;color:var(--muted);font-size:.85rem;padding:20px}
+</style></head>
+<body>
+<header><h1>🎓 Advance Academy</h1><p id="tagline">Karnataka State PUC 1st & 2nd Year Maths and Physics practice</p></header>
+<main>
+<section class="panel">
+<div class="row">
+<label><span id="langLabel">Language</span><br><select id="language"><option value="en">English</option><option value="kn">ಕನ್ನಡ (Kannada)</option></select></label>
+<label><span id="subjectLabel">Subject</span><br><select id="subject"><option value="math">Mathematics</option><option value="physics">Physics</option></select></label>
+</div>
+<p><span class="pill" id="dayPill"></span><span class="pill" id="topicPill"></span></p>
+<div class="small" id="intro"></div>
+</section>
+<section class="panel" id="quizPanel">
+<div class="row"><div class="small" id="counter"></div><div class="small" id="score"></div></div>
+<div class="progress"><span id="progressBar"></span></div>
+<h2 id="question">Loading…</h2><div id="options"></div>
+<div id="feedback" class="feedback hidden"></div>
+<div class="row" style="margin-top:14px"><button id="checkBtn" class="primary">Check answer</button><button id="nextBtn">Next question →</button></div>
+</section>
+<section class="panel hidden" id="resultPanel"><h2 id="resultTitle">Challenge complete!</h2><p id="resultText"></p><button class="primary" id="restartBtn">Try this subject again</button></section>
+<section class="panel"><strong id="noteTitle">About this challenge</strong><p class="small" id="note"></p></section>
+</main><footer>Advance Academy · Learn a little every day</footer>
+<script>
+const translations={
+en:{tagline:"Karnataka State PUC 1st & 2nd Year Maths and Physics practice",language:"Language",subject:"Subject",math:"Mathematics",physics:"Physics",check:"Check answer",next:"Next question →",day:"Day",of:"of 90",question:"Question",score:"Score",correct:"Correct! Well done.",wrong:"Not quite. Correct answer: ",choose:"Choose an answer first.",complete:"Challenge complete!",result:"You scored",noteTitle:"About this challenge",intro:"Karnataka State PUC • 1st and 2nd PUC topic rotation • English and Kannada • 30 questions per day.",note:"Topic labels are aligned broadly to Karnataka State PUC 1st and 2nd PUC Maths and Physics chapters. Questions are generated from built-in templates, not AI, and are not a complete official question bank. Some chapters have only introductory practice examples. The daily set changes at 6:00 AM according to your device local time. The 90-day schedule repeats after day 90. Check the current KSEAB syllabus and textbook for official coverage.",topicsMath:["Sets and relations","Trigonometric functions","Complex numbers and quadratics","Linear inequalities","Permutations and combinations","Binomial theorem","Sequences and series","Straight lines and conics","3D geometry","Limits and derivatives","Statistics and probability","Relations and inverse trigonometry","Matrices and determinants","Integrals and differential equations","Vectors and linear programming"],topicsPhysics:["Units and measurements","Motion in a straight line","Motion in a plane","Laws of motion","Work, energy and power","System of particles and rotation","Gravitation","Mechanical properties of solids and fluids","Thermal properties and thermodynamics","Oscillations and waves","Electric charges and fields","Potential and capacitance","Current electricity","Magnetism, induction and AC","Optics, atoms, nuclei and semiconductors"]},
+kn:{tagline:"ಪ್ರತಿದಿನದ ಉನ್ನತ ಗಣಿತ ಮತ್ತು ಭೌತಶಾಸ್ತ್ರ ಸವಾಲು",language:"ಭಾಷೆ",subject:"ವಿಷಯ",math:"ಗಣಿತ",physics:"ಭೌತಶಾಸ್ತ್ರ",check:"ಉತ್ತರ ಪರಿಶೀಲಿಸಿ",next:"ಮುಂದಿನ ಪ್ರಶ್ನೆ →",day:"ದಿನ",of:"ರಲ್ಲಿ 90",question:"ಪ್ರಶ್ನೆ",score:"ಅಂಕ",correct:"ಸರಿಯಾದ ಉತ್ತರ! ಚೆನ್ನಾಗಿದೆ.",wrong:"ಸರಿಯಲ್ಲ. ಸರಿಯಾದ ಉತ್ತರ: ",choose:"ಮೊದಲು ಒಂದು ಉತ್ತರ ಆಯ್ಕೆಮಾಡಿ.",complete:"ಸವಾಲು ಪೂರ್ಣಗೊಂಡಿದೆ!",result:"ನಿಮ್ಮ ಅಂಕ",noteTitle:"ಈ ಸವಾಲಿನ ಬಗ್ಗೆ",intro:"ಪ್ರತಿದಿನ 10 ಪ್ರಶ್ನೆಗಳು • ಇಂಗ್ಲಿಷ್ ಮತ್ತು ಕನ್ನಡ • ಮೂಲಭೂತದಿಂದ ಉನ್ನತ ವಿಷಯಗಳವರೆಗೆ.",note:"ಪ್ರಶ್ನೆಗಳು ವೆಬ್‌ಸೈಟ್‌ನಲ್ಲಿರುವ ಪ್ರಶ್ನೆ ಸಂಗ್ರಹದಿಂದ ಆಯ್ಕೆಮಾಡಲಾಗುತ್ತವೆ. ಪ್ರಶ್ನೆಗಳನ್ನು ರಚಿಸಲು AI ಅಥವಾ ಇಂಟರ್ನೆಟ್ ಬಳಸುವುದಿಲ್ಲ. ದಿನದ ಪ್ರಶ್ನೆಗಳು ನಿಮ್ಮ ಸಾಧನದ ದಿನಾಂಕವನ್ನು ಆಧರಿಸಿವೆ. ಇದು ಅಭ್ಯಾಸಕ್ಕಾಗಿ; ನಿಮ್ಮ ಪಠ್ಯಕ್ರಮಕ್ಕೆ ಬದಲಿಯಲ್ಲ.",topicsMath:["ಬೀಜಗಣಿತ ಮತ್ತು ಸಮೀಕರಣಗಳು","ವರ್ಗ ಸಮೀಕರಣಗಳು","ಫಂಕ್ಷನ್‌ಗಳು ಮತ್ತು ಗ್ರಾಫ್‌ಗಳು","ಜ್ಯಾಮಿತಿ","ತ್ರಿಕೋನಮಿತಿ","ಅನುಕ್ರಮಗಳು ಮತ್ತು ಸರಣಿಗಳು","ಸಂಭಾವ್ಯತೆ","ಸಂಖ್ಯಾಶಾಸ್ತ್ರ","ಅವಕಲನ","ಸಮಾಕಲನ","ವೆಕ್ಟರ್‌ಗಳು","ಮ್ಯಾಟ್ರಿಕ್ಸ್","ಸಂಕೀರ್ಣ ಸಂಖ್ಯೆಗಳು","ಮಿತಿ ಮತ್ತು ನಿರಂತರತೆ","ಮಿಶ್ರ ಉನ್ನತ ಅಭ್ಯಾಸ"],topicsPhysics:["ಚಲನೆ ಮತ್ತು ಗತಿವಿಜ್ಞಾನ","ನ್ಯೂಟನ್ ನಿಯಮಗಳು","ಕೆಲಸ, ಶಕ್ತಿ ಮತ್ತು ಸಾಮರ್ಥ್ಯ","ಸಂವೇಗ ಮತ್ತು ಘರ್ಷಣೆ","ವೃತ್ತೀಯ ಚಲನೆ","ಗುರುತ್ವಾಕರ್ಷಣೆ","ಅಲೆಗಳು ಮತ್ತು ಧ್ವನಿ","ಉಷ್ಣ ಮತ್ತು ಉಷ್ಣಗತಿವಿಜ್ಞಾನ","ವಿದ್ಯುತ್","ಕಾಂತತ್ವ","ಪ್ರಕಾಶವಿಜ್ಞಾನ","ಆಧುನಿಕ ಭೌತಶಾಸ್ತ್ರ","ವಿದ್ಯುತ್ಕಾಂತತ್ವ","ಭ್ರಮಣ ಚಲನಶಾಸ್ತ್ರ","ಮಿಶ್ರ ಉನ್ನತ ಅಭ್ಯಾಸ"]}
+};
+const $=id=>document.getElementById(id);
+let lang="en",subject="math",day=1,questions=[],idx=0,score=0,selected=null,answered=false;
+function dayNumber(){const start=new Date(2026,0,1);const now=new Date();now.setHours(now.getHours()-6);const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());const diff=Math.floor((today-start)/86400000);return ((diff%90)+90)%90+1}
+function topicFor(s,d){const t=translations[lang][s==="math"?"topicsMath":"topicsPhysics"];return t[Math.floor((d-1)/6)%t.length]}
+function seeded(n){let x=(n*9301+49297)%233280;return()=>{x=(x*9301+49297)%233280;return x/233280}}
+function buildQuestions(s,d){
+ const rand=seeded(d*131+(s==="math"?7:91));let out=[];
+ const choose=a=>a[Math.floor(rand()*a.length)];
+ for(let i=0;i<30;i++){
+  const topicIndex=Math.floor(i/2)%15;
+  let q,ans,opts,explain;
+  if(s==="math"){
+   switch(topicIndex){
+    case 0:{let a=2+Math.floor(rand()*8),b=1+Math.floor(rand()*12),x=1+Math.floor(rand()*10);q=`Solve for x: ${a}x + ${b} = ${a*x+b}.`;ans=String(x);explain=`Subtract ${b} from both sides, then divide by ${a}.`;break}
+    case 1:{let a=1+Math.floor(rand()*5),r1=1+Math.floor(rand()*8),r2=1+Math.floor(rand()*7);q=`For x² − ${(r1+r2)}x + ${r1*r2} = 0, what are the roots?`;ans=choose([`${r1} and ${r2}`,`${r2} and ${r1}`]);explain=`The expression factors as (x − ${r1})(x − ${r2}) = 0.`;break}
+    case 2:{let m=2+Math.floor(rand()*6),x=1+Math.floor(rand()*8),c=1+Math.floor(rand()*9);q=`If f(x) = ${m}x + ${c}, find f(${x}).`;ans=String(m*x+c);explain=`Substitute x = ${x}: ${m} × ${x} + ${c} = ${m*x+c}.`;break}
+    case 3:{let l=3+Math.floor(rand()*12),w=2+Math.floor(rand()*10);q=`A rectangle is ${l} cm long and ${w} cm wide. Find its area.`;ans=`${l*w} cm²`;explain=`Area = length × width = ${l} × ${w} = ${l*w} cm².`;break}
+    case 4:{let a=[30,45,60][Math.floor(rand()*3)];let vals={30:"1/2",45:"√2/2",60:"√3/2"};q=`What is sin(${a}°)?`;ans=vals[a];explain=`This is a standard special-angle sine value.`;break}
+    case 5:{let a=2+Math.floor(rand()*8),n=3+Math.floor(rand()*8);q=`An arithmetic sequence has first term  ${a} and common difference 3. Find term ${n}.`;ans=String(a+(n-1)*3);explain=`The nth term is first term + (n − 1) × common difference.`;break}
+    case 6:{let red=1+Math.floor(rand()*5),blue=2+Math.floor(rand()*6);q=`A bag has ${red} red and ${blue} blue balls. What is P(red) on one random draw?`;ans=`${red}/${red+blue}`;explain=`Favourable outcomes ÷ total outcomes = ${red}/${red+blue}.`;break}
+    case 7:{let a=2+Math.floor(rand()*20),b=2+Math.floor(rand()*20);q=`Find the mean of ${a}, ${b}, and ${a+b}.`;ans=String((a+b+a+b)/3);explain=`Mean = sum of values ÷ number of values.`;break}
+    case 8:{let a=2+Math.floor(rand()*8),x=1+Math.floor(rand()*8);q=`Differentiate y = ${a}x² with respect to x.`;ans=`${2*a}x`;explain=`Using d(x²)/dx = 2x, the derivative is ${2*a}x.`;break}
+    case 9:{let a=1+Math.floor(rand()*6),b=2+Math.floor(rand()*8);q=`Evaluate ∫ ${a}x dx.`;ans=`${a}x²/2 + C`;explain=`Increase the power by one and divide by the new power.`;break}
+    case 10:{let a=1+Math.floor(rand()*5),b=2+Math.floor(rand()*6);q=`If vectors u = (${a}, 0) and v = (0, ${b}), what is u · v?`;ans="0";explain="The dot product is a₁b₁ + a₂b₂; both cross-products are zero.";break}
+    case 11:{let a=1+Math.floor(rand()*5),b=2+Math.floor(rand()*6);q=`Find the determinant of [[${a}, 0], [0, ${b}]].`;ans=String(a*b);explain=`For this diagonal matrix, determinant = ${a} × ${b}.`;break}
+    case 12:{let a=1+Math.floor(rand()*5);q=`What is i² in the complex number system?`;ans="-1";explain="The imaginary unit is defined by i² = −1.";break}
+    case 13:{let a=1+Math.floor(rand()*5);q=`Evaluate lim(x→${a}) (x + 3).`;ans=String(a+3);explain="For a continuous linear expression, substitute the approaching value.";break}
+    default:{let a=2+Math.floor(rand()*8),b=1+Math.floor(rand()*8);q=`Solve ${a}x = ${a*b}.`;ans=String(b);explain=`Divide both sides by ${a}.`}
+   }
+  } else {
+   switch(topicIndex){
+    case 0:{let v=5+Math.floor(rand()*25),t=2+Math.floor(rand()*10);q=`A vehicle travels at ${v} m/s for ${t} s. How far does it travel?`;ans=`${v*t} m`;explain=`Distance = speed × time = ${v} × ${t} = ${v*t} m.`;break}
+    case 1:{let m=2+Math.floor(rand()*10),a=2+Math.floor(rand()*8);q=`What net force accelerates a ${m} kg object at ${a} m/s²?`;ans=`${m*a} N`;explain=`Newton’s second law: F = ma = ${m} × ${a} = ${m*a} N.`;break}
+    case 2:{let m=2+Math.floor(rand()*8),v=2+Math.floor(rand()*10);q=`Find the kinetic energy of a ${m} kg object moving at ${v} m/s.`;ans=`${m*v*v/2} J`;explain=`Kinetic energy = ½mv² = ½ × ${m} × ${v}².`;break}
+    case 3:{let m=2+Math.floor(rand()*10),v=2+Math.floor(rand()*8);q=`A ${m} kg object moves at ${v} m/s. Find its momentum.`;ans=`${m*v} kg·m/s`;explain=`Momentum = mass × velocity = ${m} × ${v}.`;break}
+    case 4:{let m=2+Math.floor(rand()*8),v=2+Math.floor(rand()*6);q=`A ${m} kg object moves in a circle of radius 2 m at ${v} m/s. Find centripetal force.`;ans=`${m*v*v/2} N`;explain=`F = mv²/r = ${m} × ${v}² / 2.`;break}
+    case 5:{let m=2+Math.floor(rand()*8),g=10,h=2+Math.floor(rand()*10);q=`Using g = 10 m/s², find the weight of a ${m} kg object.`;ans=`${m*10} N`;explain=`Weight = mg = ${m} × 10 = ${m*10} N.`;break}
+    case 6:{let f=100+Math.floor(rand()*500),lam=1+Math.floor(rand()*5);q=`A wave has frequency ${f} Hz and wavelength ${lam} m. Find its speed.`;ans=`${f*lam} m/s`;explain=`Wave speed = frequency × wavelength.`;break}
+    case 7:{let m=1+Math.floor(rand()*5),c=4200,dt=2+Math.floor(rand()*20);q=`How much heat is needed to warm ${m} kg of water by ${dt}°C? Use c = 4200 J/(kg·°C).`;ans=`${m*c*dt} J`;explain=`Q = mcΔT = ${m} × 4200 × ${dt}.`;break}
+    case 8:{let v=6+Math.floor(rand()*20),r=2+Math.floor(rand()*8);q=`A ${r} Ω resistor has ${v} V across it. Find the current.`;ans=`${v/r} A`;explain=`Ohm’s law: I = V/R = ${v}/${r} A.`;break}
+    case 9:{let n=2+Math.floor(rand()*8),b=2+Math.floor(rand()*5);q=`A coil has ${n} turns and magnetic flux changes by ${b} Wb in 1 s. Find average induced emf magnitude.`;ans=`${n*b} V`;explain=`Faraday’s law magnitude = turns × flux-change rate = ${n} × ${b}.`;break}
+    case 10:{let u=2+Math.floor(rand()*8),v=u+2+Math.floor(rand()*8);q=`A converging lens has focal length 10 cm. Using 1/f = 1/v − 1/u with signed distances, which law relates object and image distances?`;ans="Thin-lens equation";explain="The thin-lens equation connects focal length with object and image distances.";break}
+    case 11:{let f=2+Math.floor(rand()*8);q=`A photon has frequency ${f} × 10¹⁴ Hz. Using h = 6.63 × 10⁻³⁴ J·s, which expression gives its energy?`;ans=`6.63 × ${f} × 10⁻²⁰ J`;explain="Photon energy is E = hf; multiply Planck’s constant by frequency.";break}
+    case 12:{let v=12+Math.floor(rand()*18),r=2+Math.floor(rand()*5);q=`A wire carries ${v} A in a ${r} T field, perpendicular to the field. For 1 m of wire, find force.`;ans=`${v*r} N`;explain=`Magnetic force F = BIL = ${r} × ${v} × 1 N.`;break}
+    case 13:{let I=2+Math.floor(rand()*5),r=2+Math.floor(rand()*6);q=`A rotor has moment of inertia ${r} kg·m² and angular acceleration ${I} rad/s². Find torque.`;ans=`${r*I} N·m`;explain=`Torque = moment of inertia × angular acceleration.`;break}
+    default:{let m=2+Math.floor(rand()*8),a=2+Math.floor(rand()*5);q=`A ${m} kg object accelerates at ${a} m/s². Find net force.`;ans=`${m*a} N`;explain=`F = ma = ${m} × ${a}.`}
+   }
+  }
+  // Distinct numerical distractors; retain units when the answer uses them.
+  let numeric=String(ans).match(/^(-?\d+(?:\.\d+)?)\s*(.*)$/), raw=numeric?Number(numeric[1]):null,unit=numeric?numeric[2]:"";
+  if(raw!==null && Number.isFinite(raw)){
+   let candidates=[raw+2,raw-2,raw*2,raw/2].filter(v=>v!==raw&&Number.isFinite(v));
+   let unique=[...new Set(candidates)].slice(0,3);while(unique.length<3)unique.push(raw+unique.length+3);
+   opts=[ans,...unique.map(v=>`${Number.isInteger(v)?v:Number(v.toFixed(2))}${unit?" "+unit:""}`)];
+  }else{opts=[ans,choose(["0","1","2","3"]),choose(["−1","4","5","6"]) ,choose(["10","12","8","7"])];}
+  opts=[...new Set(opts)];while(opts.length<4)opts.push(String(opts.length+1));opts=opts.slice(0,4);
+  // Deterministic shuffle
+  for(let k=opts.length-1;k>0;k--){let j=Math.floor(rand()*(k+1));[opts[k],opts[j]]=[opts[j],opts[k]]}
+  if(lang==="kn"){q=kannadaQuestion(q);explain=kannadaExplanation(explain)}
+  out.push({q,ans,opts,explain,topic:translations[lang][s==="math"?"topicsMath":"topicsPhysics"][topicIndex]});
+ }
+ return out;
+}
+
+function kannadaQuestion(q){
+ const rules=[
+ [/^Solve for x: (.+)\.$/,'x ನ ಮೌಲ್ಯವನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ: $1.'],
+ [/^For x² − (\d+)x \+ (\d+) = 0, what are the roots\?$/,'x² − $1x + $2 = 0 ಸಮೀಕರಣದ ಮೂಲಗಳನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.'],
+ [/^If f\(x\) = (.+), find f\((\d+)\)\.$/,'f(x) = $1 ಆಗಿದ್ದರೆ, f($2) ಅನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.'],
+ [/^A rectangle is (\d+) cm long and (\d+) cm wide\. Find its area\.$/,'ಒಂದು ಆಯತದ ಉದ್ದ $1 ಸೆಂ.ಮೀ ಮತ್ತು ಅಗಲ $2 ಸೆಂ.ಮೀ. ಅದರ ವಿಸ್ತೀರ್ಣವನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.'],
+ [/^What is sin\((\d+)°\)\?$/,'sin($1°) ನ ಮೌಲ್ಯ ಎಷ್ಟು?'],
+ [/^An arithmetic sequence has first term\s+(\d+) and common difference 3\. Find term (\d+)\.$/,'ಒಂದು ಸಮಾಂತರ ಶ್ರೇಣಿಯ ಮೊದಲ ಪದ $1 ಮತ್ತು ಸಾಮಾನ್ಯ ವ್ಯತ್ಯಾಸ 3. $2ನೇ ಪದವನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.'],
+ [/^A bag has (\d+) red and (\d+) blue balls\. What is P\(red\) on one random draw\?$/,'ಒಂದು ಚೀಲದಲ್ಲಿ $1 ಕೆಂಪು ಮತ್ತು $2 ನೀಲಿ ಚೆಂಡುಗಳಿವೆ. ಯಾದೃಚ್ಛಿಕವಾಗಿ ಒಂದು ಚೆಂಡು ತೆಗೆದಾಗ ಕೆಂಪು ಚೆಂಡು ಸಿಗುವ ಸಂಭವನೀಯತೆ ಎಷ್ಟು?'],
+ [/^Find the mean of (.+), (.+), and (.+)\.$/,'$1, $2 ಮತ್ತು $3 ಗಳ ಸರಾಸರಿಯನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.'],
+ [/^Differentiate y = (.+) with respect to x\.$/,'y = $1 ಅನ್ನು x ಗೆ ಸಂಬಂಧಿಸಿದಂತೆ ಅವಕಲನಗೊಳಿಸಿ.'],
+ [/^Evaluate ∫ (.+) dx\.$/,'∫ $1 dx ಅನ್ನು ಗಣನೆ ಮಾಡಿ.'],
+ [/^If vectors u = (.+) and v = (.+), what is u · v\?$/,'ವೆಕ್ಟರ್‌ಗಳು u = $1 ಮತ್ತು v = $2 ಆಗಿದ್ದರೆ, u · v ಎಷ್ಟು?'],
+ [/^Find the determinant of (.+)\.$/,'$1 ಮ್ಯಾಟ್ರಿಕ್ಸ್‌ನ ನಿರ್ಣಾಯಕವನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.'],
+ [/^What is i² in the complex number system\?$/,'ಸಂಕೀರ್ಣ ಸಂಖ್ಯೆಗಳ ವ್ಯವಸ್ಥೆಯಲ್ಲಿ i² ನ ಮೌಲ್ಯ ಎಷ್ಟು?'],
+ [/^Evaluate lim\(x→(\d+)\) \(x \+ 3\)\.$/,'lim(x→$1) (x + 3) ನ ಮೌಲ್ಯವನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.'],
+ [/^Solve (.+)\.$/,'$1 ಅನ್ನು ಪರಿಹರಿಸಿ.'],
+ [/^A vehicle travels at (\d+) m\/s for (\d+) s\. How far does it travel\?$/,'ಒಂದು ವಾಹನವು (\d+) m/s ವೇಗದಲ್ಲಿ $2 ಸೆಕೆಂಡು ಚಲಿಸುತ್ತದೆ. ಅದು ಎಷ್ಟು ದೂರ ಸಾಗುತ್ತದೆ?'],
+ [/^What net force accelerates a (\d+) kg object at (\d+) m\/s²\?$/,'(\d+) kg ದ್ರವ್ಯರಾಶಿಯ ವಸ್ತುವಿಗೆ $2 m/s² ವೇಗವರ್ಧನೆ ನೀಡಲು ಬೇಕಾದ ಒಟ್ಟು ಬಲ ಎಷ್ಟು?'],
+ [/^Find the kinetic energy of a (\d+) kg object moving at (\d+) m\/s\.$/,'$1 kg ದ್ರವ್ಯರಾಶಿಯ ವಸ್ತು $2 m/s ವೇಗದಲ್ಲಿ ಚಲಿಸಿದರೆ ಅದರ ಚಲನಶಕ್ತಿ ಎಷ್ಟು?'],
+ [/^A (\d+) kg object moves at (\d+) m\/s\. Find its momentum\.$/,'$1 kg ವಸ್ತುವು $2 m/s ವೇಗದಲ್ಲಿ ಚಲಿಸುತ್ತದೆ. ಅದರ ಸಂವೇಗವನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.'],
+ [/^A (\d+) kg object moves in a circle of radius 2 m at (\d+) m\/s\. Find centripetal force\.$/,'$1 kg ವಸ್ತುವು 2 m ತ್ರಿಜ್ಯವಿರುವ ವೃತ್ತದಲ್ಲಿ $2 m/s ವೇಗದಲ್ಲಿ ಚಲಿಸುತ್ತದೆ. ಕೇಂದ್ರಾಭಿಮುಖ ಬಲ ಎಷ್ಟು?'],
+ [/^Using g = 10 m\/s², find the weight of a (\d+) kg object\.$/,'g = 10 m/s² ಎಂದು ತೆಗೆದುಕೊಂಡು, $1 kg ವಸ್ತುವಿನ ತೂಕವನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.'],
+ [/^A wave has frequency (\d+) Hz and wavelength (\d+) m\. Find its speed\.$/,'ಒಂದು ಅಲೆಯ ಆವೃತ್ತಿ $1 Hz ಮತ್ತು ತರಂಗಾಂತರ $2 m. ಅದರ ವೇಗವನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.'],
+ [/^How much heat is needed to warm (\d+) kg of water by (\d+)°C\? Use c = 4200 J\/\(kg·°C\)\.$/,'(\d+) kg ನೀರನ್ನು $2°C ಬಿಸಿಮಾಡಲು ಎಷ್ಟು ಉಷ್ಣ ಬೇಕು? c = 4200 J/(kg·°C) ಬಳಸಿ.'],
+ [/^A (\d+) Ω resistor has (\d+) V across it\. Find the current\.$/,'$1 Ω ಪ್ರತಿರೋಧಕದ ಎರಡು ತುದಿಗಳಲ್ಲಿ $2 V ವಿದ್ಯುತ್ ವಿಭವವಿದೆ. ವಿದ್ಯುತ್ ಪ್ರವಾಹವನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.'],
+ [/^A coil has (\d+) turns and magnetic flux changes by (\d+) Wb in 1 s\. Find average induced emf magnitude\.$/,'ಒಂದು ಸುರುಳಿಯಲ್ಲಿ $1 ಸುತ್ತುಗಳಿವೆ. 1 s ನಲ್ಲಿ ಕಾಂತೀಯ ಫ್ಲಕ್ಸ್ $2 Wb ಬದಲಾಗುತ್ತದೆ. ಸರಾಸರಿ ಪ್ರೇರಿತ ವಿದ್ಯುತ್ ಚಾಲಕ ಬಲದ ಪರಿಮಾಣ ಎಷ್ಟು?'],
+ [/^A converging lens has focal length 10 cm\..*$/,'ಒಂದು ಅಭಿಸಾರಿ ಮಸೂರದ ನಾಭಿದೂರ 10 cm. ವಸ್ತು ಮತ್ತು ಪ್ರತಿಬಿಂಬದ ದೂರಗಳನ್ನು ಯಾವ ಸಮೀಕರಣವು ಸಂಬಂಧಿಸುತ್ತದೆ?'],
+ [/^A photon has frequency (\d+) × 10¹⁴ Hz\..*$/,'ಒಂದು ಫೋಟಾನ್‌ನ ಆವೃತ್ತಿ $1 × 10¹⁴ Hz. ಅದರ ಶಕ್ತಿಯನ್ನು ಕಂಡುಹಿಡಿಯಲು ಯಾವ ಸೂತ್ರ ಬಳಸಬೇಕು?'],
+ [/^A wire carries (\d+) A in a (\d+) T field, perpendicular to the field\. For 1 m of wire, find force\.$/,'ಒಂದು ತಂತಿಯಲ್ಲಿ $1 A ಪ್ರವಾಹ ಹರಿಯುತ್ತದೆ. ಅದು $2 T ಕಾಂತಕ್ಷೇತ್ರಕ್ಕೆ ಲಂಬವಾಗಿದೆ. 1 m ತಂತಿಯ ಮೇಲಿನ ಬಲವನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.'],
+ [/^A rotor has moment of inertia (\d+) kg·m² and angular acceleration (\d+) rad\/s²\. Find torque\.$/,'ಒಂದು ತಿರುಗುವ ವಸ್ತುವಿನ ಜಡತ್ವದ ಭ್ರಾಮಕ $1 kg·m² ಮತ್ತು ಕೋನೀಯ ವೇಗವರ್ಧನೆ $2 rad/s². ಬಲಭ್ರಾಮಕವನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.'],
+ [/^A (\d+) kg object accelerates at (\d+) m\/s²\. Find net force\.$/,'$1 kg ವಸ್ತುವಿಗೆ $2 m/s² ವೇಗವರ್ಧನೆ ಇದೆ. ಒಟ್ಟು ಬಲವನ್ನು ಕಂಡುಹಿಡಿಯಿರಿ.']
+ ];
+ for(const [re,kn] of rules){if(re.test(q)) return q.replace(re,kn)}
+ return q;
+}
+function kannadaExplanation(e){
+ const simple={"The imaginary unit is defined by i² = −1.":"ಕಾಲ್ಪನಿಕ ಘಟಕದ ವ್ಯಾಖ್ಯಾನ i² = −1.","This is a standard special-angle sine value.":"ಇದು ವಿಶೇಷ ಕೋನದ ಸೈನ್‌ನ ಪ್ರಮಾಣಿತ ಮೌಲ್ಯ.","The thin-lens equation connects focal length with object and image distances.":"ತೆಳು ಮಸೂರದ ಸಮೀಕರಣವು ನಾಭಿದೂರ, ವಸ್ತುದೂರ ಮತ್ತು ಪ್ರತಿಬಿಂಬದೂರವನ್ನು ಸಂಬಂಧಿಸುತ್ತದೆ.","Photon energy is E = hf; multiply Planck’s constant by frequency.":"ಫೋಟಾನ್‌ನ ಶಕ್ತಿ E = hf. ಪ್ಲಾಂಕ್ ಸ್ಥಿರಾಂಕವನ್ನು ಆವೃತ್ತಿಯಿಂದ ಗುಣಿಸಿ.","The dot product is a₁b₁ + a₂b₂; both cross-products are zero.":"ಡಾಟ್ ಗುಣಲಬ್ಧ a₁b₁ + a₂b₂. ಇಲ್ಲಿ ಎರಡೂ ಗುಣಲಬ್ಧಗಳು ಶೂನ್ಯ.","Mean = sum of values ÷ number of values.":"ಸರಾಸರಿ = ಮೌಲ್ಯಗಳ ಮೊತ್ತ ÷ ಮೌಲ್ಯಗಳ ಸಂಖ್ಯೆ.","Increase the power by one and divide by the new power.":"ಘಾತವನ್ನು ಒಂದರಿಂದ ಹೆಚ್ಚಿಸಿ, ಹೊಸ ಘಾತದಿಂದ ಭಾಗಿಸಿ.","For a continuous linear expression, substitute the approaching value.":"ನಿರಂತರ ರೇಖೀಯ ಅಭಿವ್ಯಕ್ತಿಯಲ್ಲಿ, x ಸಮೀಪಿಸುವ ಮೌಲ್ಯವನ್ನು ಬದಲಿಯಾಗಿ ಹಾಕಿ."};
+ if(simple[e]) return simple[e];
+ return "ಸೂತ್ರವನ್ನು ಬಳಸಿ ಮೌಲ್ಯಗಳನ್ನು ಬದಲಿಸಿ ಗಣನೆ ಮಾಡಿ: "+e.replace(/Subtract /g,"ಕಳೆಯಿರಿ ").replace(/both sides/g,"ಎರಡೂ ಬದಿಗಳಿಂದ").replace(/divide by/g,"ಇಂದ ಭಾಗಿಸಿ").replace(/Area = length × width/g,"ವಿಸ್ತೀರ್ಣ = ಉದ್ದ × ಅಗಲ").replace(/Distance = speed × time/g,"ದೂರ = ವೇಗ × ಸಮಯ").replace(/Newton’s second law/g,"ನ್ಯೂಟನ್‌ನ ಎರಡನೇ ನಿಯಮ").replace(/Kinetic energy/g,"ಚಲನಶಕ್ತಿ").replace(/Momentum/g,"ಸಂವೇಗ").replace(/Weight/g,"ತೂಕ").replace(/Wave speed/g,"ಅಲೆಯ ವೇಗ").replace(/Ohm’s law/g,"ಓಮ್ ನಿಯಮ").replace(/Torque/g,"ಬಲಭ್ರಾಮಕ");
+}
+
+function render(){
+ const t=translations[lang];$("tagline").textContent=t.tagline;$("langLabel").textContent=t.language;$("subjectLabel").textContent=t.subject;
+ $("subject").options[0].text=t.math;$("subject").options[1].text=t.physics;$("checkBtn").textContent=t.check;$("nextBtn").textContent=t.next;
+ $("dayPill").textContent=`${t.day} ${day} ${t.of}`;$("topicPill").textContent=topicFor(subject,day);$("intro").textContent=t.intro;
+ $("noteTitle").textContent=t.noteTitle;$("note").textContent=t.note;
+ $("counter").textContent=`${t.question} ${idx+1}/30`;$("score").textContent=`${t.score}: ${score}`;$("progressBar").style.width=`${(idx/30)*100}%`;
+ const item=questions[idx];$("topicPill").textContent=item.topic;$("question").textContent=item.q;$("options").innerHTML="";selected=null;answered=false;$("feedback").className="feedback hidden";
+ item.opts.forEach((o,i)=>{let b=document.createElement("button");b.className="choice";b.textContent=`${String.fromCharCode(65+i)}. ${o}`;b.onclick=()=>{if(answered)return;selected=o;document.querySelectorAll(".choice").forEach(x=>x.classList.remove("selected"));b.classList.add("selected")};$("options").appendChild(b)});
+ $("checkBtn").disabled=false;$("nextBtn").textContent=idx===29?t.complete:t.next;
+}
+function check(){const t=translations[lang];if(answered)return;if(selected===null){$("feedback").textContent=t.choose;$("feedback").className="feedback bad";return}answered=true;let item=questions[idx],correct=selected===item.ans;if(correct)score++;$("score").textContent=`${t.score}: ${score}`;$("feedback").textContent=(correct?t.correct:t.wrong+item.ans)+` ${item.explain}`;$("feedback").className="feedback "+(correct?"good":"bad");document.querySelectorAll(".choice").forEach(b=>b.disabled=true);$("checkBtn").disabled=true}
+function next(){if(idx===29){$("quizPanel").classList.add("hidden");$("resultPanel").classList.remove("hidden");$("resultTitle").textContent=translations[lang].complete;$("resultText").textContent=`${translations[lang].result}: ${score}/30`;return}idx++;render()}
+function start(){lang=$("language").value;subject=$("subject").value;day=dayNumber();questions=buildQuestions(subject,day);idx=0;score=0;$("resultPanel").classList.add("hidden");$("quizPanel").classList.remove("hidden");render()}
+$("language").addEventListener("change",()=>start());$("subject").addEventListener("change",()=>start());$("checkBtn").addEventListener("click",check);$("nextBtn").addEventListener("click",next);$("restartBtn").addEventListener("click",start);start();
+</script></body></html>
