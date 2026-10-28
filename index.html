@@ -179,4 +179,105 @@ $("score").textContent=(kn()?"ನಿಮ್ಮ ಅಂಕ: ":"Your Score: ")+marks
 loadSubjects();updateLanguage();
 </script>
 </body>
+  loadSubjects();
+updateLanguage();
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDAufIqLLqr28Uwoh8fyL0myO_b77rBDAg",
+  authDomain: "advance-academy-quiz.firebaseapp.com",
+  projectId: "advance-academy-quiz",
+  appId: "1:547528517517:web:27e6d0656aec5f1baa7fc4"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+async function loadFirebaseQuestions() {
+  try {
+    const snapshot = await firebase.firestore()
+      .collection("questions")
+      .get();
+
+    if (snapshot.empty) {
+      console.log("No questions found in Firebase.");
+      return;
+    }
+
+    const firebaseQuestions = [];
+
+    snapshot.forEach(doc => {
+      const d = doc.data();
+
+      const paper = Number(d.Paper);
+      const subjectName = String(d.Subject || "")
+        .trim()
+        .toLowerCase();
+
+      const subjectMap = {
+        "mathematics": "math",
+        "math": "math",
+        "mathematics pedagogy": "mathped",
+        "math pedagogy": "mathped",
+        "physics": "physics",
+        "science": "physics",
+        "science pedagogy": "scienceped"
+      };
+
+      const subject = subjectMap[subjectName];
+
+      const correct = String(d.CorrectAnswer || "")
+        .trim()
+        .toUpperCase();
+
+      const answerIndex = ["A", "B", "C", "D"].indexOf(correct);
+
+      if (
+        ![1, 2].includes(paper) ||
+        !subject ||
+        !d.Questions_en ||
+        answerIndex < 0
+      ) {
+        console.warn("Skipping incomplete question:", doc.id);
+        return;
+      }
+
+      firebaseQuestions.push([
+        paper,
+        subject,
+        d.Questions_en || "",
+        d.Questions_kn || "",
+        [d.OptionA_en || "", d.OptionA_kn || ""],
+        [d.OptionB_en || "", d.OptionB_kn || ""],
+        [d.OptionC_en || "", d.OptionC_kn || ""],
+        [d.OptionD_en || "", d.OptionD_kn || ""],
+        answerIndex,
+        d.Explanation_en || "Review the correct answer.",
+        d.Explanation_kn || "ಸರಿಯಾದ ಉತ್ತರವನ್ನು ಪರಿಶೀಲಿಸಿ."
+      ]);
+    });
+
+    if (firebaseQuestions.length > 0) {
+      Q = firebaseQuestions;
+      loadSubjects();
+      updateLanguage();
+
+      console.log(
+        "Firebase questions loaded:",
+        firebaseQuestions.length
+      );
+    }
+  } catch (error) {
+    console.error("Firebase loading failed:", error);
+  }
+}
+
+loadFirebaseQuestions();
+</script>
+
+</body>
+</html>
 </html>
